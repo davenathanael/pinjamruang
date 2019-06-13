@@ -97,7 +97,6 @@ public class ReservationService {
     private boolean roomIsReserved(Reservation reservation) {
         LocalDateTime startDate = reservation.getStartDate();
         LocalDateTime endDate = reservation.getEndDate();
-        System.out.println(reservation.getId());
         List<Reservation> reservationsWithOverlappingDate =
                 this.reservationRepository.findByStartDateBetweenAndEndDateBetween(
                         startDate, endDate, startDate, endDate);

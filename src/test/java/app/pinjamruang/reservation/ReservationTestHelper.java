@@ -1,5 +1,6 @@
 package app.pinjamruang.reservation;
 
+import app.pinjamruang.reservation.dto.CreateReservationDto;
 import app.pinjamruang.reservation.model.Reservation;
 import app.pinjamruang.room.model.Room;
 
@@ -26,6 +27,16 @@ public class ReservationTestHelper {
                 10,
                 "Testing",
                 room
+        );
+    }
+
+    public static CreateReservationDto createDummyDto() {
+        return new CreateReservationDto(
+                "2019-06-12 10:00",
+                "2019-06-12 12:00",
+                10,
+                "Testing",
+                1L
         );
     }
 }

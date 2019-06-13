@@ -1,9 +1,13 @@
 package app.pinjamruang.reservation.controller;
 
+import app.pinjamruang.reservation.dto.CreateReservationDto;
+import app.pinjamruang.reservation.exception.RoomNotAvailableException;
 import app.pinjamruang.reservation.model.Reservation;
 import app.pinjamruang.reservation.service.ReservationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -17,10 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static app.pinjamruang.reservation.ReservationTestHelper.*;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -28,6 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ReservationControllerTests {
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private ReservationService service;
@@ -81,5 +87,75 @@ public class ReservationControllerTests {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    public void createReservation_notEnoughCapacity_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Given room do not have enough capacity.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
+        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createReservation_roomNotOnOperationalTime_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Given room is not in operational time at given start and end time.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createReservation_roomIsAlreadyReserved_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Given room is already reserved at given time.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createReservation_reservationNotWithinOneDay_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Reservations can not span for more than one day.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createReservation_success() throws Exception {
+        CreateReservationDto dto = createDummyDto();
+        Reservation dummyReservation = createDummyReservation(createDummyRoom());
+        when(service.createReservation(dto)).thenReturn(dummyReservation);
+
+        System.out.println(service.createReservation(dto).toString());
+        System.out.println(dummyReservation);
+
+        System.out.println(objectMapper.writeValueAsString(dto));
+
+        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteReservation_success() throws Exception {
+        mvc.perform(delete("/reservations/1"))
+                .andExpect(status().isOk());
+
+        verify(service, times(1)).deleteReservation(1L);
+        verifyNoMoreInteractions(service);
+    }
+
+    @Test
+    public void deleteReservation_reservationNotFound_throwsResourceNotFoundException() throws Exception {
+        doThrow(new ResourceNotFoundException()).when(service).deleteReservation(1L);
+
+        mvc.perform(delete("/reservations/1"))
+                .andExpect(status().isNotFound());
+    }
 }
