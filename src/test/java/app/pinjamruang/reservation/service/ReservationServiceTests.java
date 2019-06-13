@@ -12,19 +12,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
+import static app.pinjamruang.reservation.ReservationTestHelper.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationServiceTests {
-
-    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
     @InjectMocks
     ReservationService service;
 
@@ -41,7 +37,7 @@ public class ReservationServiceTests {
 
     @Test
     public void getAllReservations_success() {
-        List<Reservation> results = service.getAllReservations();
+        service.getAllReservations();
 
         verify(reservationRepository).findAll();
     }
@@ -51,7 +47,7 @@ public class ReservationServiceTests {
         Reservation reservation = new Reservation();
         when(reservationRepository.getOne(1L)).thenReturn(reservation);
 
-        Reservation result = service.getReservationById(2L);
+        service.getReservationById(2L);
     }
 
     @Test
@@ -59,7 +55,7 @@ public class ReservationServiceTests {
         Reservation reservation = new Reservation();
         when(reservationRepository.getOne(1L)).thenReturn(reservation);
 
-        Reservation result = service.getReservationById(1L);
+        service.getReservationById(1L);
     }
 
     @Test(expected = RoomNotAvailableException.class)
@@ -74,7 +70,8 @@ public class ReservationServiceTests {
                 "Testing",
                 1L
         );
-        Reservation result = service.createReservation(dto);
+
+        service.createReservation(dto);
 
         verifyZeroInteractions(reservationRepository);
     }
@@ -91,7 +88,8 @@ public class ReservationServiceTests {
                 "Testing",
                 1L
         );
-        Reservation result = service.createReservation(dto);
+
+        service.createReservation(dto);
 
         verifyZeroInteractions(reservationRepository);
     }
@@ -108,8 +106,8 @@ public class ReservationServiceTests {
                 "Testing",
                 1L
         );
-        LocalDateTime startDate = LocalDateTime.parse("2019-06-12 09:00", formatter);
-        LocalDateTime endDate = LocalDateTime.parse("2019-06-12 09:10", formatter);
+        LocalDateTime startDate = LocalDateTime.parse("2019-06-12 09:00", DTO_DATETIME_FORMATTER);
+        LocalDateTime endDate = LocalDateTime.parse("2019-06-12 09:10", DTO_DATETIME_FORMATTER);
 
         List<Reservation> dummy = new ArrayList<>();
         dummy.add(new Reservation());
@@ -118,7 +116,8 @@ public class ReservationServiceTests {
                 reservationRepository.findByStartDateBetweenAndEndDateBetweenAndIdNot(eq(startDate), eq(endDate), eq(startDate), eq(endDate), anyLong())
         ).thenReturn(dummy);
 
-        Reservation result = service.createReservation(dto);
+        service.createReservation(dto);
+
         verifyZeroInteractions(reservationRepository);
     }
 
@@ -134,7 +133,8 @@ public class ReservationServiceTests {
                 "Testing",
                 1L
         );
-        Reservation result = service.createReservation(dto);
+
+        service.createReservation(dto);
 
         verifyZeroInteractions(reservationRepository);
     }
@@ -152,14 +152,15 @@ public class ReservationServiceTests {
                 1L
         );
 
-        LocalDateTime startDate = LocalDateTime.parse("2019-06-12 10:00", formatter);
-        LocalDateTime endDate = LocalDateTime.parse("2019-06-12 12:00", formatter);
+        LocalDateTime startDate = LocalDateTime.parse("2019-06-12 10:00", DTO_DATETIME_FORMATTER);
+        LocalDateTime endDate = LocalDateTime.parse("2019-06-12 12:00", DTO_DATETIME_FORMATTER);
 
         Reservation dummy = new Reservation(startDate, endDate, 10, "Testing", room);
 
         when(reservationRepository.save(any(Reservation.class))).thenReturn(dummy);
 
-        Reservation result = service.createReservation(dto);
+        service.createReservation(dto);
+
         verify(reservationRepository).save(any(Reservation.class));
     }
 
@@ -179,7 +180,7 @@ public class ReservationServiceTests {
                 1L
         );
 
-        Reservation result = service.updateReservation(1L, dto);
+        service.updateReservation(1L, dto);
 
         verifyZeroInteractions(reservationRepository);
     }
@@ -200,7 +201,7 @@ public class ReservationServiceTests {
                 1L
         );
 
-        Reservation result = service.updateReservation(1L, dto);
+        service.updateReservation(1L, dto);
 
         verifyZeroInteractions(reservationRepository);
     }
@@ -221,8 +222,8 @@ public class ReservationServiceTests {
                 1L
         );
 
-        LocalDateTime startDate = LocalDateTime.parse("2019-06-12 09:00", formatter);
-        LocalDateTime endDate = LocalDateTime.parse("2019-06-12 09:10", formatter);
+        LocalDateTime startDate = LocalDateTime.parse("2019-06-12 09:00", DTO_DATETIME_FORMATTER);
+        LocalDateTime endDate = LocalDateTime.parse("2019-06-12 09:10", DTO_DATETIME_FORMATTER);
 
         List<Reservation> dummy = new ArrayList<>();
         dummy.add(new Reservation());
@@ -231,7 +232,7 @@ public class ReservationServiceTests {
                 reservationRepository.findByStartDateBetweenAndEndDateBetweenAndIdNot(eq(startDate), eq(endDate), eq(startDate), eq(endDate), anyLong())
         ).thenReturn(dummy);
 
-        Reservation result = service.updateReservation(1L, dto);
+        service.updateReservation(1L, dto);
 
         verifyZeroInteractions(reservationRepository);
     }
@@ -253,24 +254,5 @@ public class ReservationServiceTests {
         service.deleteReservation(1L);
 
         verify(reservationRepository).deleteById(1L);
-    }
-
-    private Room createDummyRoom() {
-        return new Room(
-                "Room 1",
-                10,
-                LocalTime.parse("09:00"),
-                LocalTime.parse("18:00")
-        );
-    }
-
-    private Reservation createDummyReservation(Room room) {
-        return new Reservation(
-                LocalDateTime.parse("2019-06-12 10:00", formatter),
-                LocalDateTime.parse("2019-06-12 12:00", formatter),
-                10,
-                "Testing",
-                room
-        );
     }
 }
