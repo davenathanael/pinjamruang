@@ -11,10 +11,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static app.pinjamruang.reservation.ReservationTestHelper.*;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,12 +44,31 @@ public class ReservationControllerTests {
     @Test
     public void getAllReservations_notEmptyReservations_success() throws Exception {
         List<Reservation> reservations = new ArrayList<>();
+        reservations.add(createDummyReservation(createDummyRoom()));
+        reservations.add(createDummyReservation(createDummyRoom()));
+
         when(service.getAllReservations()).thenReturn(reservations);
 
         mvc.perform(get("/reservations/").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].agenda", is(reservations.get(0).getAgenda())))
+                .andExpect(jsonPath("$[1].agenda", is(reservations.get(1).getAgenda())));
     }
 
+    @Test
+    public void getReservationById_success() throws Exception {
+        Reservation dummyReservation = createDummyReservation(createDummyRoom());
+        when(service.getReservationById(1L)).thenReturn(dummyReservation);
+
+        mvc.perform(get("/reservations/1").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.agenda", is(dummyReservation.getAgenda())))
+                .andExpect(jsonPath("$.attendees", is(dummyReservation.getAttendees())))
+                .andExpect(jsonPath("$.startDate", is(dummyReservation.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
+                .andExpect(jsonPath("$.endDate", is(dummyReservation.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
+        ;
+    }
 }

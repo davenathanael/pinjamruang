@@ -1,11 +1,13 @@
 package app.pinjamruang.reservation.model;
 
 import app.pinjamruang.room.model.Room;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 public class Reservation {
     @Id
@@ -27,7 +29,7 @@ public class Reservation {
     @Column(name = "agenda")
     private String agenda;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "roomId", nullable = false)
     private Room room;
 
