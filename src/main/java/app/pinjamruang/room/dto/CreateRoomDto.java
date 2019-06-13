@@ -6,6 +6,13 @@ public class CreateRoomDto {
     private String openTime;
     private String closeTime;
 
+    public CreateRoomDto(String name, Integer capacity, String openTime, String closeTime) {
+        this.name = name;
+        this.capacity = capacity;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+    }
+
     public String getName() {
         return name;
     }
