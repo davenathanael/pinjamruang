@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -71,4 +72,14 @@ public class ReservationControllerTests {
                 .andExpect(jsonPath("$.endDate", is(dummyReservation.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
         ;
     }
+
+    @Test
+    public void getReservationById_reservationNotFound_throwsResourceNotFoundException() throws Exception {
+        when(service.getReservationById(1L)).thenThrow(new ResourceNotFoundException());
+
+        mvc.perform(get("/reservations/1").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+
 }

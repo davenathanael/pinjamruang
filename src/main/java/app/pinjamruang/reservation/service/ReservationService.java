@@ -41,6 +41,7 @@ public class ReservationService {
 
     public Reservation createReservation(CreateReservationDto reservationDto) throws RoomNotAvailableException {
         Reservation newReservation = convertDtoToReservation(reservationDto);
+
         validateReservation(newReservation);
 
         return this.reservationRepository.save(newReservation);
@@ -96,9 +97,10 @@ public class ReservationService {
     private boolean roomIsReserved(Reservation reservation) {
         LocalDateTime startDate = reservation.getStartDate();
         LocalDateTime endDate = reservation.getEndDate();
+        System.out.println(reservation.getId());
         List<Reservation> reservationsWithOverlappingDate =
-                this.reservationRepository.findByStartDateBetweenAndEndDateBetweenAndIdNot(
-                        startDate, endDate, startDate, endDate, reservation.getId());
+                this.reservationRepository.findByStartDateBetweenAndEndDateBetween(
+                        startDate, endDate, startDate, endDate);
 
         return reservationsWithOverlappingDate.size() > 0;
     }

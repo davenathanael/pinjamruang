@@ -7,11 +7,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    List<Reservation> findByStartDateBetweenAndEndDateBetweenAndIdNot(
+    List<Reservation> findByStartDateBetweenAndEndDateBetween(
             LocalDateTime startDateStart,
             LocalDateTime startDateEnd,
             LocalDateTime endDateStart,
-            LocalDateTime endDateEnd,
-            Long id
+            LocalDateTime endDateEnd
     );
 }

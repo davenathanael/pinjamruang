@@ -113,7 +113,7 @@ public class ReservationServiceTests {
         dummy.add(new Reservation());
 
         when(
-                reservationRepository.findByStartDateBetweenAndEndDateBetweenAndIdNot(eq(startDate), eq(endDate), eq(startDate), eq(endDate), anyLong())
+                reservationRepository.findByStartDateBetweenAndEndDateBetween(eq(startDate), eq(endDate), eq(startDate), eq(endDate))
         ).thenReturn(dummy);
 
         service.createReservation(dto);
@@ -229,7 +229,7 @@ public class ReservationServiceTests {
         dummy.add(new Reservation());
 
         when(
-                reservationRepository.findByStartDateBetweenAndEndDateBetweenAndIdNot(eq(startDate), eq(endDate), eq(startDate), eq(endDate), anyLong())
+                reservationRepository.findByStartDateBetweenAndEndDateBetween(eq(startDate), eq(endDate), eq(startDate), eq(endDate))
         ).thenReturn(dummy);
 
         service.updateReservation(1L, dto);
