@@ -237,6 +237,29 @@ public class ReservationServiceTests {
         verifyZeroInteractions(reservationRepository);
     }
 
+    @Test
+    public void updateReservation_success() {
+        Room room = createDummyRoom();
+        when(roomService.getRoomById(1L)).thenReturn(room);
+
+        Reservation reservation = createDummyReservation(room);
+        when(reservationRepository.getOne(1L)).thenReturn(reservation);
+
+        CreateReservationDto dto = new CreateReservationDto(
+                "2019-06-12 10:00",
+                "2019-06-12 12:00",
+                10,
+                "Testing",
+                1L
+        );
+
+        when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
+
+        service.updateReservation(1L, dto);
+
+        verify(reservationRepository).save(any(Reservation.class));
+    }
+
     @Test(expected = ResourceNotFoundException.class)
     public void deleteReservation_reservationNotExist_throwsResourceNotFoundException() {
         when(reservationRepository.getOne(1L)).thenReturn(null);
