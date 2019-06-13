@@ -30,8 +30,13 @@ public class ReservationService {
     }
 
     public Reservation getReservationById(Long id) throws ResourceNotFoundException {
-        return this.reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Can\'t found any reservation with id %d", id)));
+        Reservation result = this.reservationRepository.getOne(id);
+
+        if (result == null) {
+            throw new ResourceNotFoundException(String.format("Can\'t found any reservation with id %d", id));
+        }
+
+        return result;
     }
 
     public Reservation createReservation(CreateReservationDto reservationDto) throws RoomNotAvailableException {
@@ -41,16 +46,13 @@ public class ReservationService {
         return this.reservationRepository.save(newReservation);
     }
 
-    public Reservation updateReservation(Long reservationId, CreateReservationDto reservationDto) throws RoomNotAvailableException {
+    public Reservation updateReservation(Long reservationId, CreateReservationDto reservationDto) throws RoomNotAvailableException, ResourceNotFoundException {
+        Reservation reservation = getReservationById(reservationId);
 
-        return this.reservationRepository.findById(reservationId)
-                .map(oldReservation -> {
-                    updateReservationFromDto(oldReservation, reservationDto);
-                    validateReservation(oldReservation);
+        updateReservationFromDto(reservation, reservationDto);
+        validateReservation(reservation);
 
-                    return this.reservationRepository.save(oldReservation);
-                })
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Can\'t found any reservation with id %d", reservationId)));
+        return this.reservationRepository.save(reservation);
     }
 
     public void deleteReservation(Long reservationId) {
@@ -92,14 +94,11 @@ public class ReservationService {
     private boolean roomIsReserved(Reservation reservation) {
         LocalDateTime startDate = reservation.getStartDate();
         LocalDateTime endDate = reservation.getEndDate();
-        List<Reservation> reservationsWithOverlappingDate = this.reservationRepository.findByStartDateBetweenAndEndDateBetween(startDate, endDate, startDate, endDate);
+        List<Reservation> reservationsWithOverlappingDate =
+                this.reservationRepository.findByStartDateBetweenAndEndDateBetweenAndIdNot(
+                        startDate, endDate, startDate, endDate, reservation.getId());
 
         return reservationsWithOverlappingDate.size() > 0;
-//        for (Reservation overlappingReservation : reservationsWithOverlappingDate) {
-//            System.out.println(String.format("overlapping id: %d, reservation id: %d", overlappingReservation.getId(), reservation.getId()));
-//            if (!overlappingReservation.getId().equals(reservation.getId())) return true;
-//        }
-//        return false;
     }
 
     private boolean reservationWithinOneDay(Reservation reservation) {
