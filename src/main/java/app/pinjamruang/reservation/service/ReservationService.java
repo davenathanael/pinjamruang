@@ -55,11 +55,13 @@ public class ReservationService {
         return this.reservationRepository.save(reservation);
     }
 
-    public void deleteReservation(Long reservationId) {
+    public void deleteReservation(Long reservationId) throws ResourceNotFoundException {
+        getReservationById(reservationId);
+
         this.reservationRepository.deleteById(reservationId);
     }
 
-    private void validateReservation(Reservation reservation) throws RoomNotAvailableException{
+    private void validateReservation(Reservation reservation) throws RoomNotAvailableException {
         if (!roomHasEnoughCapacity(reservation)) {
             throw new RoomNotAvailableException("Given room do not have enough capacity.");
         }

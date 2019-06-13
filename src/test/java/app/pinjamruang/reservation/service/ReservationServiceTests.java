@@ -12,14 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.eq;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReservationServiceTest {
+public class ReservationServiceTests {
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -240,6 +234,25 @@ public class ReservationServiceTest {
         Reservation result = service.updateReservation(1L, dto);
 
         verifyZeroInteractions(reservationRepository);
+    }
+
+    @Test(expected = ResourceNotFoundException.class)
+    public void deleteReservation_reservationNotExist_throwsResourceNotFoundException() {
+        when(reservationRepository.getOne(1L)).thenReturn(null);
+
+        service.deleteReservation(1L);
+
+        verifyNoMoreInteractions(reservationRepository);
+    }
+
+    @Test
+    public void deleteReservation_success() {
+        Reservation reservation = createDummyReservation(createDummyRoom());
+        when(reservationRepository.getOne(1L)).thenReturn(reservation);
+
+        service.deleteReservation(1L);
+
+        verify(reservationRepository).deleteById(1L);
     }
 
     private Room createDummyRoom() {
