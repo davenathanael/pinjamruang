@@ -23,34 +23,41 @@ public class RoomService {
     }
 
     public Room getRoomById(Long id) {
-        return this.repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Can\'t found room with id %d", id)));
+        Room result = this.repository.getOne(id);
+        if (result == null) {
+            throw new ResourceNotFoundException(String.format("Can\'t found room with id %d", id));
+        }
+        return result;
     }
 
     public Room createRoom(CreateRoomDto roomDto) {
-        Room newRoom = new Room();
-
-        newRoom.setName(roomDto.getName());
-        newRoom.setCapacity(roomDto.getCapacity());
-        newRoom.setOpenTime(LocalTime.parse(roomDto.getOpenTime(), formatter));
-        newRoom.setCloseTime(LocalTime.parse(roomDto.getCloseTime(), formatter));
+        Room newRoom = createRoomFromDto(roomDto);
 
         return this.repository.save(newRoom);
     }
 
     public Room updateRoom(Long roomId, CreateRoomDto roomDto) {
-        return this.repository.findById(roomId)
-                .map(oldRoom -> {
-                    oldRoom.setName(roomDto.getName());
-                    oldRoom.setCapacity(roomDto.getCapacity());
-                    oldRoom.setOpenTime(LocalTime.parse(roomDto.getOpenTime(), formatter));
-                    oldRoom.setCloseTime(LocalTime.parse(roomDto.getCloseTime(), formatter));
-                    return this.repository.save(oldRoom);
-                })
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Can\'t found room with id %d", roomId)));
+        Room room = getRoomById(roomId);
+        updateRoomFromDto(room, roomDto);
+
+        return this.repository.save(room);
     }
 
     public void deleteRoom(Long roomId) {
         this.repository.deleteById(roomId);
+    }
+
+    private Room createRoomFromDto(CreateRoomDto dto) {
+        Room room = new Room();
+        updateRoomFromDto(room, dto);
+
+        return room;
+    }
+
+    private void updateRoomFromDto(Room room, CreateRoomDto dto) {
+        room.setName(dto.getName());
+        room.setCapacity(dto.getCapacity());
+        room.setOpenTime(LocalTime.parse(dto.getOpenTime(), formatter));
+        room.setCloseTime(LocalTime.parse(dto.getCloseTime(), formatter));
     }
 }
