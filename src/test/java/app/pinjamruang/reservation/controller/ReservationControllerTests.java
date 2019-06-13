@@ -133,12 +133,64 @@ public class ReservationControllerTests {
         Reservation dummyReservation = createDummyReservation(createDummyRoom());
         when(service.createReservation(dto)).thenReturn(dummyReservation);
 
-        System.out.println(service.createReservation(dto).toString());
-        System.out.println(dummyReservation);
-
-        System.out.println(objectMapper.writeValueAsString(dto));
+//        System.out.println(service.createReservation(dto).toString());
+//        System.out.println(dummyReservation);
+//
+//        System.out.println(objectMapper.writeValueAsString(dto));
 
         mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+// =========================================================================================================
+
+    @Test
+    public void updateReservation_notEnoughCapacity_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Given room do not have enough capacity.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void updateReservation_roomNotOnOperationalTime_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Given room is not in operational time at given start and end time.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void updateReservation_roomIsAlreadyReserved_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Given room is already reserved at given time.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void updateReservation_reservationNotWithinOneDay_throwsRoomNotAvailableException() throws Exception {
+        String errorMessage = "Reservations can not span for more than one day.";
+        CreateReservationDto dto = createDummyDto();
+        when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
+
+        mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void updateReservation_success() throws Exception {
+        CreateReservationDto dto = createDummyDto();
+        Reservation dummyReservation = createDummyReservation(createDummyRoom());
+        when(service.updateReservation(1L, dto)).thenReturn(dummyReservation);
+
+        mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

@@ -10,7 +10,6 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@ResponseBody
 @RequestMapping("/reservations")
 public class ReservationController {
     @Autowired
@@ -27,7 +26,6 @@ public class ReservationController {
     }
 
     @PostMapping("/")
-    @ResponseBody
     public Reservation createReservation(@Valid @RequestBody CreateReservationDto reservationDto) {
         return this.service.createReservation(reservationDto);
     }
