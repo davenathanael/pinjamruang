@@ -39,7 +39,8 @@ public class Room {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Room() {}
+    public Room() {
+    }
 
     public Room(String name, @NotNull Integer capacity, @NotNull LocalTime openTime, @NotNull LocalTime closeTime) {
         this.name = name;
@@ -56,8 +57,16 @@ public class Room {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Integer getCapacity() {
         return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -72,20 +81,12 @@ public class Room {
         return openTime;
     }
 
-    public LocalTime getCloseTime() {
-        return closeTime;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
-
     public void setOpenTime(LocalTime openTime) {
         this.openTime = openTime;
+    }
+
+    public LocalTime getCloseTime() {
+        return closeTime;
     }
 
     public void setCloseTime(LocalTime closeTime) {

@@ -43,7 +43,8 @@ public class Reservation {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Reservation() {}
+    public Reservation() {
+    }
 
     public Reservation(@NotNull LocalDateTime startDate, @NotNull LocalDateTime endDate, @NotNull Integer attendees, String agenda, Room room) {
         this.startDate = startDate;
@@ -61,20 +62,40 @@ public class Reservation {
         return startDate;
     }
 
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
     public LocalDateTime getEndDate() {
         return endDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
     }
 
     public Integer getAttendees() {
         return attendees;
     }
 
+    public void setAttendees(Integer attendees) {
+        this.attendees = attendees;
+    }
+
     public String getAgenda() {
         return agenda;
     }
 
+    public void setAgenda(String agenda) {
+        this.agenda = agenda;
+    }
+
     public Room getRoom() {
         return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -83,25 +104,5 @@ public class Reservation {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setAgenda(String agenda) {
-        this.agenda = agenda;
-    }
-
-    public void setAttendees(Integer attendees) {
-        this.attendees = attendees;
-    }
-
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
-    }
-
-    public void setEndDate(LocalDateTime endDate) {
-        this.endDate = endDate;
-    }
-
-    public void setRoom(Room room) {
-        this.room = room;
     }
 }

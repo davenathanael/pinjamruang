@@ -43,10 +43,10 @@ public class TestUtils {
 
     public static CreateRoomDto createDummyRoomDto() {
         return new CreateRoomDto(
-              "Room 1",
-              10,
-              "09:00",
-              "18:00"
+                "Room 1",
+                10,
+                "09:00",
+                "18:00"
         );
     }
 }

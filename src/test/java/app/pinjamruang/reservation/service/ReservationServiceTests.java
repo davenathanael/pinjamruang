@@ -12,13 +12,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
-import static app.pinjamruang.TestUtils.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static app.pinjamruang.TestUtils.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class ReservationServiceTests {
     @InjectMocks
@@ -122,7 +122,7 @@ public class ReservationServiceTests {
     }
 
     @Test(expected = RoomNotAvailableException.class)
-    public void createReservation_reservationWithinOneDay_throwsRoomNotAvailableException(){
+    public void createReservation_reservationWithinOneDay_throwsRoomNotAvailableException() {
         Room room = createDummyRoom();
         when(roomService.getRoomById(1L)).thenReturn(room);
 
