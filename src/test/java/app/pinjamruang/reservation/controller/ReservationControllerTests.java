@@ -20,10 +20,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static app.pinjamruang.reservation.ReservationTestHelper.*;
+import static app.pinjamruang.TestUtils.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -42,7 +43,7 @@ public class ReservationControllerTests {
     public void getAllReservations_noReservation_success() throws Exception {
         when(service.getAllReservations()).thenReturn(new ArrayList<>());
 
-        mvc.perform(get("/reservations/").contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/reservations/"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -56,7 +57,7 @@ public class ReservationControllerTests {
 
         when(service.getAllReservations()).thenReturn(reservations);
 
-        mvc.perform(get("/reservations/").contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/reservations/"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -90,7 +91,7 @@ public class ReservationControllerTests {
     @Test
     public void createReservation_notEnoughCapacity_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Given room do not have enough capacity.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -100,7 +101,7 @@ public class ReservationControllerTests {
     @Test
     public void createReservation_roomNotOnOperationalTime_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Given room is not in operational time at given start and end time.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -110,7 +111,7 @@ public class ReservationControllerTests {
     @Test
     public void createReservation_roomIsAlreadyReserved_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Given room is already reserved at given time.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -120,26 +121,33 @@ public class ReservationControllerTests {
     @Test
     public void createReservation_reservationNotWithinOneDay_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Reservations can not span for more than one day.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
-        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post("/reservations/")
+                .content(objectMapper.writeValueAsString(dto))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createReservation_success() throws Exception {
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         Reservation dummyReservation = createDummyReservation(createDummyRoom());
-        when(service.createReservation(dto)).thenReturn(dummyReservation);
+        when(service.createReservation(ArgumentMatchers.any(CreateReservationDto.class))).thenReturn(dummyReservation);
 
-//        System.out.println(service.createReservation(dto).toString());
-//        System.out.println(dummyReservation);
-//
-//        System.out.println(objectMapper.writeValueAsString(dto));
-
-        mvc.perform(post("/reservations/").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(
+                post("/reservations/")
+                    .content(objectMapper.writeValueAsString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.agenda", is(dummyReservation.getAgenda())))
+                .andExpect(jsonPath("$.attendees", is(dummyReservation.getAttendees())))
+                .andExpect(jsonPath("$.startDate", is(dummyReservation.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
+                .andExpect(jsonPath("$.endDate", is(dummyReservation.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))));
     }
 
 // =========================================================================================================
@@ -147,7 +155,7 @@ public class ReservationControllerTests {
     @Test
     public void updateReservation_notEnoughCapacity_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Given room do not have enough capacity.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -157,7 +165,7 @@ public class ReservationControllerTests {
     @Test
     public void updateReservation_roomNotOnOperationalTime_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Given room is not in operational time at given start and end time.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -167,7 +175,7 @@ public class ReservationControllerTests {
     @Test
     public void updateReservation_roomIsAlreadyReserved_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Given room is already reserved at given time.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -177,7 +185,7 @@ public class ReservationControllerTests {
     @Test
     public void updateReservation_reservationNotWithinOneDay_throwsRoomNotAvailableException() throws Exception {
         String errorMessage = "Reservations can not span for more than one day.";
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         when(service.updateReservation(ArgumentMatchers.anyLong(), ArgumentMatchers.any(CreateReservationDto.class))).thenThrow(new RoomNotAvailableException(errorMessage));
 
         mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
@@ -186,12 +194,17 @@ public class ReservationControllerTests {
 
     @Test
     public void updateReservation_success() throws Exception {
-        CreateReservationDto dto = createDummyDto();
+        CreateReservationDto dto = createDummyReservationDto();
         Reservation dummyReservation = createDummyReservation(createDummyRoom());
-        when(service.updateReservation(1L, dto)).thenReturn(dummyReservation);
+        when(service.updateReservation(ArgumentMatchers.eq(1L), ArgumentMatchers.any(CreateReservationDto.class))).thenReturn(dummyReservation);
 
         mvc.perform(put("/reservations/1").content(objectMapper.writeValueAsString(dto)).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.agenda", is(dummyReservation.getAgenda())))
+                .andExpect(jsonPath("$.attendees", is(dummyReservation.getAttendees())))
+                .andExpect(jsonPath("$.startDate", is(dummyReservation.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
+                .andExpect(jsonPath("$.endDate", is(dummyReservation.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))));
     }
 
     @Test

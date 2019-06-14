@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
-import static app.pinjamruang.reservation.ReservationTestHelper.*;
+import static app.pinjamruang.TestUtils.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 

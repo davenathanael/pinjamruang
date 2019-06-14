@@ -1,14 +1,15 @@
-package app.pinjamruang.reservation;
+package app.pinjamruang;
 
 import app.pinjamruang.reservation.dto.CreateReservationDto;
 import app.pinjamruang.reservation.model.Reservation;
+import app.pinjamruang.room.dto.CreateRoomDto;
 import app.pinjamruang.room.model.Room;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public class ReservationTestHelper {
+public class TestUtils {
     public static final DateTimeFormatter DTO_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public static Room createDummyRoom() {
@@ -30,13 +31,22 @@ public class ReservationTestHelper {
         );
     }
 
-    public static CreateReservationDto createDummyDto() {
+    public static CreateReservationDto createDummyReservationDto() {
         return new CreateReservationDto(
                 "2019-06-12 10:00",
                 "2019-06-12 12:00",
                 10,
                 "Testing",
                 1L
+        );
+    }
+
+    public static CreateRoomDto createDummyRoomDto() {
+        return new CreateRoomDto(
+              "Room 1",
+              10,
+              "09:00",
+              "18:00"
         );
     }
 }
